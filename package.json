@@ -1,39 +1,37 @@
 {
   "name": "@vscode/vscode-perf-bot",
   "version": "0.0.1",
+  "private": "false",
   "description": "Allows to run performance tests with Slack bot messages for VS Code.",
+  "keywords": [
+    "vscode"
+  ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "keywords": [
-    "vscode"
-  ],
   "license": "MIT",
   "author": {
     "name": "Nikola Hristov",
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
+  "publisher": "playform",
+  "type": "module",
   "main": "out/index",
   "bin": {
     "vscode-perf-bot": "bin/vscode-perf-bot"
   },
   "scripts": {
-    "compile": "tsc -p ./",
     "build": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile": "tsc -p ./",
     "prepare": "npm run build",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "engines": {
-    "node": ">= 16"
-  },
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript": "5.2.x",
-    "typescript-esbuild": "0.3.1"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "tsc -watch -p ./"
   },
   "dependencies": {
     "@octokit/rest": "20.0.2",
@@ -41,11 +39,14 @@
     "chalk": "5.x",
     "commander": "11.1.0"
   },
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript": "5.2.x",
+    "typescript-esbuild": "0.3.1"
   },
-  "type": "module",
-  "private": "false",
+  "engines": {
+    "node": ">= 16"
+  },
   "publishConfig": {
     "access": "public"
   }
