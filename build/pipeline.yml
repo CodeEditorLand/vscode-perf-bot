@@ -1,38 +1,38 @@
 name: $(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
-  branches:
-    include:
-      - main
+    branches:
+        include:
+            - main
 pr: none
 
 resources:
-  repositories:
-    - repository: templates
-      type: github
-      name: microsoft/vscode-engineering
-      ref: main
-      endpoint: Monaco
+    repositories:
+        - repository: templates
+          type: github
+          name: microsoft/vscode-engineering
+          ref: main
+          endpoint: Monaco
 
 parameters:
-  - name: publishPackage
-    displayName: 🚀 Publish @vscode/vscode-perf-bot
-    type: boolean
-    default: false
+    - name: publishPackage
+      displayName: 🚀 Publish @vscode/vscode-perf-bot
+      type: boolean
+      default: false
 
 extends:
-  template: azure-pipelines/npm-package/pipeline.yml@templates
-  parameters:
-    npmPackages:
-      - name: vscode-perf-bot
+    template: azure-pipelines/npm-package/pipeline.yml@templates
+    parameters:
+        npmPackages:
+            - name: vscode-perf-bot
 
-        buildSteps:
-          - script: yarn install --frozen-lockfile
-            displayName: Install dependencies
-          
-          - script: yarn run build
-            displayName: Build
+              buildSteps:
+                  - script: yarn install --frozen-lockfile
+                    displayName: Install dependencies
 
-        testPlatforms: []
+                  - script: yarn run build
+                    displayName: Build
 
-        publishPackage: ${{ parameters.publishPackage }}
+              testPlatforms: []
+
+              publishPackage: ${{ parameters.publishPackage }}
