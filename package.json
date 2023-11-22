@@ -1,8 +1,12 @@
 {
   "name": "@vscode/vscode-perf-bot",
   "version": "0.0.1",
+  "private": "false",
   "description": "Allows to run performance tests with Slack bot messages for VS Code.",
   "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
@@ -13,6 +17,8 @@
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
+  "publisher": "playform",
+  "type": "module",
   "main": "out/index",
   "bin": {
     "vscode-perf-bot": "bin/vscode-perf-bot"
@@ -21,8 +27,8 @@
     "build": "tsc -p ./",
     "compile": "tsc -p ./",
     "prepare": "npm run build",
-    "watch": "tsc -watch -p ./",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "tsc -watch -p ./"
   },
   "dependencies": {
     "@octokit/rest": "20.0.2",
@@ -35,12 +41,6 @@
     "typescript": "5.3.x",
     "typescript-esbuild": "0.3.1"
   },
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "publisher": "playform",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   }
