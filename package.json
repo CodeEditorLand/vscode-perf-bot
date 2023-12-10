@@ -39,7 +39,7 @@
 	"devDependencies": {
 		"@types/node": "20.x",
 		"typescript": "5.3.x",
-		"typescript-esbuild": "0.3.1"
+		"typescript-esbuild": "0.3.2"
 	},
 	"publishConfig": {
 		"access": "public"
