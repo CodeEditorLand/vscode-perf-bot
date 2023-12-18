@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as cp from "child_process";
+import * as fs from "fs";
 import { tmpdir } from "os";
 import * as path from "path";
-import * as fs from "fs";
-import { program, Option } from "commander";
-import chalk from "chalk";
 import { Octokit } from "@octokit/rest";
-import { WebClient, LogLevel, ChatPostMessageArguments } from "@slack/web-api";
+import { ChatPostMessageArguments, LogLevel, WebClient } from "@slack/web-api";
+import chalk from "chalk";
+import { Option, program } from "commander";
 
 interface Opts {
 	readonly runtime?: "desktop" | "web";
@@ -82,7 +82,7 @@ async function logGist(opts: Opts): Promise<void> {
 				content: logEntries
 					.map(
 						(entry) =>
-							`${entry.date.toISOString()} ${entry.message}`
+							`${entry.date.toISOString()} ${entry.message}`,
 					)
 					.join("\n"),
 			},
@@ -93,8 +93,8 @@ async function logGist(opts: Opts): Promise<void> {
 async function runPerformanceTest(opts: Opts): Promise<void> {
 	log(
 		`${chalk.gray("[init]")} storing performance results in ${chalk.green(
-			Constants.PERF_FILE
-		)}`
+			Constants.PERF_FILE,
+		)}`,
 	);
 
 	fs.mkdirSync(path.dirname(Constants.PERF_FILE), { recursive: true });
@@ -111,13 +111,11 @@ async function runPerformanceTest(opts: Opts): Promise<void> {
 			} else {
 				build = "https://vscode.dev";
 			}
+		} else if (opts.githubToken) {
+			build =
+				"https://insiders.vscode.dev/github/microsoft/vscode/blob/main/package.json";
 		} else {
-			if (opts.githubToken) {
-				build =
-					"https://insiders.vscode.dev/github/microsoft/vscode/blob/main/package.json";
-			} else {
-				build = "https://insiders.vscode.dev";
-			}
+			build = "https://insiders.vscode.dev";
 		}
 	} else {
 		build = opts.quality || "insider";
@@ -164,7 +162,7 @@ async function runPerformanceTest(opts: Opts): Promise<void> {
 	if (opts.runtimeTrace) {
 		// Collects metrics for loading, navigation and v8 script compilation phases.
 		args.push(
-			'--runtime-trace-categories="benchmark,browser,content,loading,navigation,mojom,renderer_host,startup,toplevel,v8,disabled-by-default-loading,disabled-by-default-network,disabled-by-default-v8.compile"'
+			'--runtime-trace-categories="benchmark,browser,content,loading,navigation,mojom,renderer_host,startup,toplevel,v8,disabled-by-default-loading,disabled-by-default-network,disabled-by-default-v8.compile"',
 		);
 	}
 	if (opts.disableCachedData) {
@@ -179,8 +177,8 @@ async function runPerformanceTest(opts: Opts): Promise<void> {
 
 		log(
 			`${chalk.gray("[exec]")} started npx process with pid ${chalk.green(
-				npx.pid
-			)}`
+				npx.pid,
+			)}`,
 		);
 
 		npx.stdout.on("data", (data) => {
@@ -196,15 +194,15 @@ async function runPerformanceTest(opts: Opts): Promise<void> {
 				`${chalk.gray("[exec]")} failed to execute (${error
 					.toString()
 					.trim()})`,
-				true
+				true,
 			);
 		});
 
 		npx.on("close", (code, signal) => {
 			log(
 				`${chalk.gray("[exec]")} finished with exit code ${chalk.green(
-					code
-				)} and signal ${chalk.green(signal)}`
+					code,
+				)} and signal ${chalk.green(signal)}`,
 			);
 
 			resolve();
@@ -248,9 +246,9 @@ function parsePerfFile(): PerfData | undefined {
 	if (lines.length < 5) {
 		log(
 			`${chalk.red(
-				"[perf] found less than 5 performance results, refusing to send chat message"
+				"[perf] found less than 5 performance results, refusing to send chat message",
 			)}`,
-			true
+			true,
 		);
 
 		return undefined;
@@ -279,8 +277,10 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 		} catch (err) {
 			log(
 				`${chalk.gray(
-					"[perf]"
-				)} failed to load message threads from ${chalk.green(filepath)}`
+					"[perf]",
+				)} failed to load message threads from ${chalk.green(
+					filepath,
+				)}`,
 			);
 		}
 	}
@@ -336,20 +336,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 		bestThreadRun = Number(messageMetadata[1]);
 	}
 
-	if (!thread_ts) {
-		const result = await slack.chat.postMessage({
-			...stub,
-			text: summary,
-		});
-
-		if (result.ts) {
-			thread_ts = result.ts;
-			messageThreadsByCommit.set(
-				commit,
-				[thread_ts, bestDuration].join("|")
-			);
-		}
-	} else {
+	if (thread_ts) {
 		if (typeof bestThreadRun === "number" && bestDuration < bestThreadRun) {
 			await slack.chat.update({
 				channel: stub.channel,
@@ -359,7 +346,20 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 
 			messageThreadsByCommit.set(
 				commit,
-				[thread_ts, bestDuration].join("|")
+				[thread_ts, bestDuration].join("|"),
+			);
+		}
+	} else {
+		const result = await slack.chat.postMessage({
+			...stub,
+			text: summary,
+		});
+
+		if (result.ts) {
+			thread_ts = result.ts;
+			messageThreadsByCommit.set(
+				commit,
+				[thread_ts, bestDuration].join("|"),
 			);
 		}
 	}
@@ -376,59 +376,59 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 	}
 }
 
-module.exports = async function (argv: string[]): Promise<void> {
+module.exports = async (argv: string[]): Promise<void> => {
 	program.addHelpText(
 		"beforeAll",
-		`Version: ${require("../package.json").version}\n`
+		`Version: ${require("../package.json").version}\n`,
 	);
 
 	program
 		.addOption(
 			new Option(
 				"-r, --runtime <runtime>",
-				"whether to measure startup performance with vscode.dev or local desktop (default) version"
-			).choices(["desktop", "web"])
+				"whether to measure startup performance with vscode.dev or local desktop (default) version",
+			).choices(["desktop", "web"]),
 		)
 		.addOption(
 			new Option(
 				"-q, --quality <quality>",
-				"the quality to test (insiders by default)"
-			).choices(["stable", "insider", "exploration"])
+				"the quality to test (insiders by default)",
+			).choices(["stable", "insider", "exploration"]),
 		)
 		.option(
 			"-c, --commit <commit|latest>",
-			'commit hash of a specific build to test or "latest" published build (default)'
+			'commit hash of a specific build to test or "latest" published build (default)',
 		)
 		.option(
 			"--folder <folder path>",
-			"a folder path to open (desktop only)"
+			"a folder path to open (desktop only)",
 		)
 		.option("--file <file path>", "a file path to open (desktop only)")
 		.option(
 			"--github-token <token>",
-			`a GitHub token of scopes 'repo', 'workflow', 'user:email', 'read:user', 'gist' to enable additional performance tests targetting web and logging to a Gist`
+			`a GitHub token of scopes 'repo', 'workflow', 'user:email', 'read:user', 'gist' to enable additional performance tests targetting web and logging to a Gist`,
 		)
 		.option("--gist <id>", "a Gist ID to write all log messages to")
 		.option(
 			"--slack-token <token>",
-			`a Slack token for writing Slack messages`
+			`a Slack token for writing Slack messages`,
 		)
 		.option(
 			"--slack-message-threads <filepath>",
-			`a file in which commit -> message thread mappings are stored`
+			`a file in which commit -> message thread mappings are stored`,
 		)
 		.option(
 			"-f, --fast <number>",
-			"what time is considered a fast performance run"
+			"what time is considered a fast performance run",
 		)
 		.option(
 			"-v, --verbose",
-			"logs verbose output to the console when errors occur"
+			"logs verbose output to the console when errors occur",
 		)
 		.option("--runtime-trace", "enable startup tracing of the runtime")
 		.option(
 			"--disable-cached-data",
-			"Disable V8 code caching (desktop only)"
+			"Disable V8 code caching (desktop only)",
 		);
 
 	const opts: Opts = program.parse(argv).opts();
@@ -455,17 +455,17 @@ module.exports = async function (argv: string[]): Promise<void> {
 		if (data) {
 			log(
 				`${chalk.gray("[perf]")} overall result: BEST ${chalk.green(
-					`${data.bestDuration}ms`
+					`${data.bestDuration}ms`,
 				)}, VERSION ${chalk.green(data.commit)}, APP ${chalk.green(
-					`${data.appName}_${Constants.RUNTIME}`
-				)}`
+					`${data.appName}_${Constants.RUNTIME}`,
+				)}`,
 			);
 			await sendSlackMessage(data, opts);
 		}
 	} catch (e) {
 		log(
 			`${chalk.red("[perf]")} failed to run performance test: ${e}`,
-			true
+			true,
 		);
 	}
 
