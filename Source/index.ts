@@ -64,7 +64,7 @@ function log(message: string, asError = false): void {
 }
 
 async function logGist(opts: Opts): Promise<void> {
-	if (!opts.gist || !opts.githubToken) {
+	if (!(opts.gist && opts.githubToken)) {
 		return;
 	}
 
@@ -411,11 +411,11 @@ module.exports = async (argv: string[]): Promise<void> => {
 		.option("--gist <id>", "a Gist ID to write all log messages to")
 		.option(
 			"--slack-token <token>",
-			`a Slack token for writing Slack messages`,
+			"a Slack token for writing Slack messages",
 		)
 		.option(
 			"--slack-message-threads <filepath>",
-			`a file in which commit -> message thread mappings are stored`,
+			"a file in which commit -> message thread mappings are stored",
 		)
 		.option(
 			"-f, --fast <number>",
