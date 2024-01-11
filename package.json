@@ -23,7 +23,7 @@
 	},
 	"dependencies": {
 		"@octokit/rest": "20.0.2",
-		"@slack/web-api": "6.11.1",
+		"@slack/web-api": "6.11.2",
 		"chalk": "5.x",
 		"commander": "11.1.0"
 	},
