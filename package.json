@@ -1,34 +1,47 @@
 {
-	"name": "@vscode/vscode-perf-bot",
-	"version": "0.2.2",
-	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
-	"homepage": "https://github.com/Microsoft/vscode-perf-bot",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Microsoft/vscode-perf-bot"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Microsoft Corporation"
-	},
-	"main": "out/index",
-	"bin": {
-		"vscode-perf-bot": "bin/vscode-perf-bot"
-	},
-	"scripts": {
-		"build": "tsc -p ./",
-		"compile": "tsc -p ./",
-		"prepare": "npm run build",
-		"watch": "tsc -watch -p ./"
-	},
-	"dependencies": {
-		"@octokit/rest": "20.0.2",
-		"@slack/web-api": "7.0.1",
-		"chalk": "5.x",
-		"commander": "11.1.0"
-	},
-	"devDependencies": {
-		"@types/node": "20.x",
-		"typescript": "5.3.x"
-	}
+  "author": {
+    "email": "nikola@nikolahristov.tech",
+    "name": "Nikola Hristov",
+    "url": "https://nikolahristov.tech"
+  },
+  "bin": {
+    "vscode-perf-bot": "bin/vscode-perf-bot"
+  },
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "dependencies": {
+    "@octokit/rest": "20.0.2",
+    "@slack/web-api": "7.0.1",
+    "chalk": "5.x",
+    "commander": "11.1.0"
+  },
+  "description": "Allows to run performance tests with Slack bot messages for VS Code.",
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript": "5.3.x",
+    "typescript-esbuild": "0.3.3"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "out/index",
+  "name": "@vscode/vscode-perf-bot",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "publisher": "playform",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "scripts": {
+    "build": "tsc -p ./",
+    "compile": "tsc -p ./",
+    "prepare": "npm run build",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "tsc -watch -p ./"
+  },
+  "type": "module",
+  "version": "0.0.1"
 }
