@@ -1,29 +1,41 @@
 {
-	"name": "@vscode/vscode-perf-bot",
-	"version": "0.0.1",
-	"private": false,
+	"author": {
+		"email": "Land@PlayForm.Cloud",
+		"name": "🌆 — Land —",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"bin": {
+		"vscode-perf-bot": "bin/vscode-perf-bot"
+	},
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandPerfBot/issues"
+	},
+	"dependencies": {
+		"@octokit/rest": "20.1.0",
+		"@slack/web-api": "7.0.4",
+		"chalk": "5.x",
+		"commander": "12.0.0"
+	},
 	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "20.x"
+	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandPerfBot#readme",
 	"keywords": [
 		"land"
 	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandPerfBot#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandPerfBot/issues"
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "out/index",
+	"name": "@vscode/vscode-perf-bot",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+HTTPS://github.com/CodeEditorLand/LandPerfBot.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "🌆 — Land —",
-		"email": "Land@PlayForm.Cloud",
-		"url": "HTTPS://Land.PlayForm.Cloud"
-	},
-	"type": "module",
-	"main": "out/index",
-	"bin": {
-		"vscode-perf-bot": "bin/vscode-perf-bot"
 	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
@@ -32,18 +44,6 @@
 		"prepare": "npm run build",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"dependencies": {
-		"@octokit/rest": "20.1.0",
-		"@slack/web-api": "7.0.4",
-		"chalk": "5.x",
-		"commander": "12.0.0"
-	},
-	"devDependencies": {
-		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
-		"@types/node": "20.x"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+	"type": "module",
+	"version": "0.0.1"
 }
