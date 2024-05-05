@@ -3,19 +3,22 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/LandPerfBot#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/LandPerfBot/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/LandPerfBot.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "out/index",
@@ -23,22 +26,22 @@
 		"vscode-perf-bot": "bin/vscode-perf-bot"
 	},
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"build": "tsc -p ./",
 		"compile": "tsc -p ./",
 		"prepare": "npm run build",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "tsc -watch -p ./"
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"dependencies": {
-		"@octokit/rest": "20.0.2",
-		"@slack/web-api": "7.0.2",
+		"@octokit/rest": "20.1.0",
+		"@slack/web-api": "7.0.4",
 		"chalk": "5.x",
 		"commander": "12.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "20.x",
-		"typescript": "5.4.x",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "20.x"
 	},
 	"publishConfig": {
 		"access": "public"
