@@ -33,7 +33,7 @@
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"dependencies": {
-		"@octokit/rest": "20.1.0",
+		"@octokit/rest": "20.1.1",
 		"@slack/web-api": "7.0.4",
 		"chalk": "5.x",
 		"commander": "12.0.0"
