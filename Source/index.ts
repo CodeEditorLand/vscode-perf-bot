@@ -190,6 +190,13 @@ type PerfData = {
     readonly commit: string;
     readonly appName: string;
     readonly bestDuration: number;
+
+    readonly avgHeapAllocated: number | undefined;
+    readonly avgHeapCollected: number | undefined;
+    readonly avgMajorGC: number | undefined;
+    readonly avgMinorGC: number | undefined;
+    readonly avgGCDuration: number | undefined;
+
     readonly lines: string[];
 }
 
@@ -201,19 +208,36 @@ function parsePerfFile(): PerfData | undefined {
 
     let commitValue = 'unknown';
     let appNameValue = 'unknown';
-    let bestDuration: number = Number.MAX_SAFE_INTEGER
+    let bestDuration: number = Number.MAX_SAFE_INTEGER;
+    let heapsAllocated: number[] = [];
+    let heapsCollected: number[] = [];
+    let majorGCs: number[] = [];
+    let minorGCs: number[] = [];
+    let gcDurations: number[] = [];
     for (const line of rawLines) {
         if (!line) {
             continue;
         }
 
-        const [durationRaw, appName, commit] = line.split('\t');
+        const [durationRaw, appName, commit, sessionId, info, perfBaseline, heap] = line.split('\t');
         const duration = Number(durationRaw);
 
         appNameValue = appName;
         commitValue = commit;
         if (duration < bestDuration) {
             bestDuration = duration;
+        }
+
+        if (heap) { // currently only supported for web
+            const res = /Heap: (\d+)MB \(used\) (\d+)MB \(garbage\) (\d+) \(MajorGC\) (\d+) \(MinorGC\) (\d+)ms \(GC duration\)/.exec(heap);
+            if (res) {
+                const [, heapAllocated, heapCollected, majorGC, minorGC, gcDuration] = res;
+                heapsAllocated.push(Number(heapAllocated));
+                heapsCollected.push(Number(heapCollected));
+                majorGCs.push(Number(majorGC));
+                minorGCs.push(Number(minorGC));
+                gcDurations.push(Number(gcDuration));
+            }
         }
 
         lines.push(`${duration < Constants.FAST ? 'FAST' : 'SLOW'} ${line}`);
@@ -229,6 +253,11 @@ function parsePerfFile(): PerfData | undefined {
         commit: commitValue,
         appName: appNameValue,
         bestDuration: bestDuration,
+        avgHeapAllocated: heapsAllocated.length ? Math.round(heapsAllocated.reduce((p, c) => p + c, 0) / heapsAllocated.length) : undefined,
+        avgHeapCollected: heapsCollected.length ? Math.round(heapsCollected.reduce((p, c) => p + c, 0) / heapsCollected.length) : undefined,
+        avgMajorGC: majorGCs.length ? Math.round(majorGCs.reduce((p, c) => p + c, 0) / majorGCs.length) : undefined,
+        avgMinorGC: minorGCs.length ? Math.round(minorGCs.reduce((p, c) => p + c, 0) / minorGCs.length) : undefined,
+        avgGCDuration: gcDurations.length ? Math.round(gcDurations.reduce((p, c) => p + c, 0) / gcDurations.length) : undefined,
         lines
     }
 }
@@ -250,7 +279,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
         }
     }
 
-    const { commit, bestDuration, appName, lines } = data;
+    const { commit, bestDuration, avgHeapAllocated, avgHeapCollected, avgMajorGC, avgMinorGC, avgGCDuration, lines } = data;
 
     const slack = new WebClient(opts.slackToken, { logLevel: LogLevel.ERROR });
 
@@ -282,6 +311,12 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
     let summary = `${platformIcon} ${qualityIcon} ${bestDuration! < Constants.FAST ? ':rocket:' : ':hankey:'} Summary: BEST \`${bestDuration}ms\`, VERSION \`${commit}\``;
     if (opts.runtime === 'web') {
         summary += `, SCENARIO \`${opts.githubToken ? 'standard remote' : 'empty window'}\``;
+    }
+    if (avgHeapAllocated && avgHeapCollected) {
+        summary += `, HEAP \`${avgHeapAllocated}MB (used) ${avgHeapCollected}MB (garbage) ${Math.round(avgHeapCollected / avgHeapAllocated * 100)}% (ratio)\``;
+    }
+    if (avgMajorGC && avgMinorGC && avgGCDuration) {
+        summary += `, GC \`${avgMajorGC} (MajorGC) ${avgMinorGC} (MinorGC) ${avgGCDuration}ms (duration)\``;
     }
 
     const detail = `\`\`\`${lines.join('\n')}\`\`\``;
