@@ -84,14 +84,7 @@ async function logGist(opts: Opts): Promise<void> {
     });
 }
 
-async function runPerformanceTest(opts: Opts): Promise<void> {
-    log(`${chalk.gray('[init]')} storing performance results in ${chalk.green(Constants.PERF_FILE)}`);
-
-    fs.mkdirSync(path.dirname(Constants.PERF_FILE), { recursive: true });
-    if (fs.existsSync(Constants.PERF_FILE)) {
-        fs.truncateSync(Constants.PERF_FILE);
-    }
-
+async function runPerformanceTest(opts: Opts, enableHeapStatistics: boolean, runs: number): Promise<void> {
     let build: string;
     if (opts.runtime === 'web') {
         if (opts.quality === 'stable') {
@@ -121,8 +114,12 @@ async function runPerformanceTest(opts: Opts): Promise<void> {
         '--prof-append-timers',
         Constants.PERF_FILE,
         '--runs',
-        '10'
+        `${runs}`
     ]
+
+    if (enableHeapStatistics) {
+        args.push('--prof-append-heap-statistics');
+    }
 
     if (build === 'insider') {
 
@@ -189,13 +186,14 @@ async function runPerformanceTest(opts: Opts): Promise<void> {
 type PerfData = {
     readonly commit: string;
     readonly appName: string;
+
     readonly bestDuration: number;
 
-    readonly avgHeapAllocated: number | undefined;
-    readonly avgHeapCollected: number | undefined;
-    readonly avgMajorGC: number | undefined;
-    readonly avgMinorGC: number | undefined;
-    readonly avgGCDuration: number | undefined;
+    readonly bestHeapUsed: number | undefined;
+    readonly bestHeapGarbage: number | undefined;
+    readonly bestMajorGCs: number | undefined;
+    readonly bestMinorGCs: number | undefined;
+    readonly bestGCDuration: number | undefined;
 
     readonly lines: string[];
 }
@@ -209,11 +207,11 @@ function parsePerfFile(): PerfData | undefined {
     let commitValue = 'unknown';
     let appNameValue = 'unknown';
     let bestDuration: number = Number.MAX_SAFE_INTEGER;
-    let heapsAllocated: number[] = [];
-    let heapsCollected: number[] = [];
-    let majorGCs: number[] = [];
-    let minorGCs: number[] = [];
-    let gcDurations: number[] = [];
+    let bestHeapUsed: number = Number.MAX_SAFE_INTEGER;
+    let bestHeapGarbage: number = 0;
+    let bestMajorGCs: number = 0;
+    let bestMinorGCs: number = 0;
+    let bestGCDuration: number = 0;
     for (const line of rawLines) {
         if (!line) {
             continue;
@@ -228,23 +226,25 @@ function parsePerfFile(): PerfData | undefined {
             bestDuration = duration;
         }
 
-        if (heap) { // currently only supported for web
+        if (heap) {
             const res = /Heap: (\d+)MB \(used\) (\d+)MB \(garbage\) (\d+) \(MajorGC\) (\d+) \(MinorGC\) (\d+)ms \(GC duration\)/.exec(heap);
             if (res) {
-                const [, heapAllocated, heapCollected, majorGC, minorGC, gcDuration] = res;
-                heapsAllocated.push(Number(heapAllocated));
-                heapsCollected.push(Number(heapCollected));
-                majorGCs.push(Number(majorGC));
-                minorGCs.push(Number(minorGC));
-                gcDurations.push(Number(gcDuration));
+                const [, used, garbage, majorGC, minorGC, gcDuration] = res;
+                if ((Number(used) + Number(garbage)) < (bestHeapUsed + bestHeapGarbage)) {
+                    bestHeapUsed = Number(used);
+                    bestHeapGarbage = Number(garbage);
+                    bestMajorGCs = Number(majorGC);
+                    bestMinorGCs = Number(minorGC);
+                    bestGCDuration = Number(gcDuration);
+                }
             }
         }
 
         lines.push(`${duration < Constants.FAST ? 'FAST' : 'SLOW'} ${line}`);
     }
 
-    if (lines.length < 5) {
-        log(`${chalk.red('[perf] found less than 5 performance results, refusing to send chat message')}`, true);
+    if (lines.length < 1) {
+        log(`${chalk.red('[perf] found no performance results, refusing to send chat message')}`, true);
 
         return undefined;
     }
@@ -252,12 +252,12 @@ function parsePerfFile(): PerfData | undefined {
     return {
         commit: commitValue,
         appName: appNameValue,
-        bestDuration: bestDuration,
-        avgHeapAllocated: heapsAllocated.length ? Math.round(heapsAllocated.reduce((p, c) => p + c, 0) / heapsAllocated.length) : undefined,
-        avgHeapCollected: heapsCollected.length ? Math.round(heapsCollected.reduce((p, c) => p + c, 0) / heapsCollected.length) : undefined,
-        avgMajorGC: majorGCs.length ? Math.round(majorGCs.reduce((p, c) => p + c, 0) / majorGCs.length) : undefined,
-        avgMinorGC: minorGCs.length ? Math.round(minorGCs.reduce((p, c) => p + c, 0) / minorGCs.length) : undefined,
-        avgGCDuration: gcDurations.length ? Math.round(gcDurations.reduce((p, c) => p + c, 0) / gcDurations.length) : undefined,
+        bestDuration,
+        bestHeapUsed,
+        bestHeapGarbage,
+        bestMajorGCs,
+        bestMinorGCs,
+        bestGCDuration,
         lines
     }
 }
@@ -279,7 +279,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
         }
     }
 
-    const { commit, bestDuration, avgHeapAllocated, avgHeapCollected, avgMajorGC, avgMinorGC, avgGCDuration, lines } = data;
+    const { commit, bestDuration, bestHeapUsed, bestHeapGarbage, bestMajorGCs, bestMinorGCs, bestGCDuration, lines } = data;
 
     const slack = new WebClient(opts.slackToken, { logLevel: LogLevel.ERROR });
 
@@ -312,11 +312,11 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
     if (opts.runtime === 'web') {
         summary += `, SCENARIO \`${opts.githubToken ? 'standard remote' : 'empty window'}\``;
     }
-    if (avgHeapAllocated && avgHeapCollected) {
-        summary += `, HEAP \`${avgHeapAllocated}MB (used) ${avgHeapCollected}MB (garbage) ${Math.round(avgHeapCollected / avgHeapAllocated * 100)}% (ratio)\``;
+    if (bestHeapUsed && bestHeapGarbage) {
+        summary += `, HEAP \`${bestHeapUsed}MB (used) ${bestHeapGarbage}MB (garbage) ${Math.round(bestHeapGarbage / (bestHeapUsed + bestHeapGarbage) * 100)}% (ratio)\``;
     }
-    if (avgMajorGC && avgMinorGC && avgGCDuration) {
-        summary += `, GC \`${avgMajorGC} (MajorGC) ${avgMinorGC} (MinorGC) ${avgGCDuration}ms (duration)\``;
+    if (bestMajorGCs && bestMinorGCs && bestGCDuration) {
+        summary += `, GCs \`${bestMajorGCs + bestMinorGCs} blocking ${bestGCDuration}ms\``;
     }
 
     const detail = `\`\`\`${lines.join('\n')}\`\`\``;
@@ -399,9 +399,17 @@ module.exports = async function (argv: string[]): Promise<void> {
     }, Constants.TIMEOUT / 2);
 
     try {
+        log(`${chalk.gray('[init]')} storing performance results in ${chalk.green(Constants.PERF_FILE)}`);
 
-        // Run performance test and write to prof-startup.txt
-        await runPerformanceTest(opts);
+        fs.mkdirSync(path.dirname(Constants.PERF_FILE), { recursive: true });
+        if (fs.existsSync(Constants.PERF_FILE)) {
+            fs.truncateSync(Constants.PERF_FILE);
+        }
+
+        // Run performance test and write to prof-startup.txt. Split into 2 runs
+        // with and without heap statistics because that can make execution slower
+        await runPerformanceTest(opts, false /* without heap statistics */, 10 /* runs */);
+        await runPerformanceTest(opts, true /* with heap statistics */, 5 /* runs */);
 
         // Parse performance result file
         const data = parsePerfFile();
