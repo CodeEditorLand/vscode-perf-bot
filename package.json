@@ -11,12 +11,12 @@
 		"prepare": "npm run build"
 	},
 	"dependencies": {
-		"@octokit/rest": "21.0.1",
-		"@slack/web-api": "7.3.1",
-		"chalk": "5.x",
-		"commander": "12.1.0"
+		"@octokit/rest": "19.0.7",
+		"@slack/web-api": "6.8.0",
+		"chalk": "4.x",
+		"commander": "9.4.0"
 	},
 	"devDependencies": {
-		"@types/node": "20.x"
+		"@types/node": "18.x"
 	}
 }
