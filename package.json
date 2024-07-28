@@ -1,14 +1,6 @@
 {
-	"name": "@vscode/vscode-perf-bot",
-	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
-	"main": "out/index",
 	"bin": {
 		"vscode-perf-bot": "bin/vscode-perf-bot"
-	},
-	"scripts": {
-		"build": "tsc -p ./",
-		"compile": "tsc -p ./",
-		"prepare": "npm run build"
 	},
 	"dependencies": {
 		"@octokit/rest": "19.0.7",
@@ -16,7 +8,15 @@
 		"chalk": "4.0",
 		"commander": "9.4.0"
 	},
+	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
 	"devDependencies": {
 		"@types/node": "18.0"
+	},
+	"main": "out/index",
+	"name": "@vscode/vscode-perf-bot",
+	"scripts": {
+		"build": "tsc -p ./",
+		"compile": "tsc -p ./",
+		"prepare": "npm run build"
 	}
 }
