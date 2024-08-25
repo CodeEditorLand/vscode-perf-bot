@@ -10,7 +10,7 @@
 	},
 	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
 	"devDependencies": {
-		"@types/node": "22.4"
+		"@types/node": "22.5"
 	},
 	"main": "out/index",
 	"name": "@vscode/vscode-perf-bot",
