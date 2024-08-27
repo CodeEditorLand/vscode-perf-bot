@@ -8,7 +8,7 @@ A command line tool to run VS Code performance tests and write results to Slack.
 
 -   [Node.js](https://nodejs.org/en/) at least `16.x.x`
 
-## Usage
+## 🛠️ Usage
 
 ```sh
 npx @vscode/vscode-perf-bot [ARGS]
