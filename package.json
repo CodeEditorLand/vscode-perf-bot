@@ -1,22 +1,40 @@
 {
-	"bin": {
-		"vscode-perf-bot": "bin/vscode-perf-bot"
-	},
-	"dependencies": {
-		"@octokit/rest": "21.0.2",
-		"@slack/web-api": "7.5.0",
-		"chalk": "5.x",
-		"commander": "12.1.0"
-	},
-	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
-	"devDependencies": {
-		"@types/node": "22.x"
-	},
-	"main": "out/index",
-	"name": "@vscode/vscode-perf-bot",
-	"scripts": {
-		"build": "tsc -p ./",
-		"compile": "tsc -p ./",
-		"prepare": "npm run build"
-	}
+    "name": "@vscode/vscode-perf-bot",
+    "version": "0.2.7",
+    "description": "Allows to run performance tests with Slack bot messages for VS Code.",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Microsoft/vscode-perf-bot"
+    },
+    "homepage": "https://github.com/Microsoft/vscode-perf-bot",
+    "keywords": [
+        "vscode"
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Microsoft Corporation"
+    },
+    "main": "out/index",
+    "bin": {
+        "vscode-perf-bot": "bin/vscode-perf-bot"
+    },
+    "scripts": {
+        "compile": "tsc -p ./",
+        "build": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "prepare": "npm run build"
+    },
+    "engines": {
+        "node": ">= 16"
+    },
+    "dependencies": {
+        "@octokit/rest": "^19.0.7",
+        "@slack/web-api": "^6.8.0",
+        "chalk": "^4.x",
+        "commander": "^9.4.0"
+    },
+    "devDependencies": {
+        "@types/node": "18.x",
+        "typescript": "5.4.x"
+    }
 }
