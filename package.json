@@ -3,10 +3,10 @@
 		"vscode-perf-bot": "bin/vscode-perf-bot"
 	},
 	"dependencies": {
-		"@octokit/rest": "^21.0.2",
-		"@slack/web-api": "^7.6.0",
-		"chalk": "^5.x",
-		"commander": "^12.1.0"
+		"@octokit/rest": "21.0.2",
+		"@slack/web-api": "7.6.0",
+		"chalk": "5.x",
+		"commander": "12.1.0"
 	},
 	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
 	"devDependencies": {
