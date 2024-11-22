@@ -48,6 +48,7 @@ interface ILogEntry {
 }
 
 const logEntries: ILogEntry[] = [];
+
 const ansicolors =
 	/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 function log(message: string, asError = false): void {
@@ -96,6 +97,7 @@ async function runPerformanceTest(
 	runs: number,
 ): Promise<void> {
 	let build: string;
+
 	if (opts.runtime === "web") {
 		if (opts.quality === "stable") {
 			if (opts.githubToken) {
@@ -220,18 +222,27 @@ type PerfData = {
 
 function parsePerfFile(): PerfData | undefined {
 	const raw = fs.readFileSync(Constants.PERF_FILE, "utf-8").toString();
+
 	const rawLines = raw.split(/\r?\n/);
 
 	const lines: string[] = [];
 
 	let commitValue = "unknown";
+
 	let appNameValue = "unknown";
+
 	let bestDuration: number = Number.MAX_SAFE_INTEGER;
+
 	let bestHeapUsed: number = Number.MAX_SAFE_INTEGER;
+
 	let bestHeapGarbage: number = 0;
+
 	let bestMajorGCs: number = 0;
+
 	let bestMinorGCs: number = 0;
+
 	let bestGCDuration: number = 0;
+
 	for (const line of rawLines) {
 		if (!line) {
 			continue;
@@ -246,10 +257,12 @@ function parsePerfFile(): PerfData | undefined {
 			perfBaseline,
 			heap,
 		] = line.split("\t");
+
 		const duration = Number(durationRaw);
 
 		appNameValue = appName;
 		commitValue = commit;
+
 		if (duration < bestDuration) {
 			bestDuration = duration;
 		}
@@ -259,8 +272,10 @@ function parsePerfFile(): PerfData | undefined {
 				/Heap: (\d+)MB \(used\) (\d+)MB \(garbage\) (\d+) \(MajorGC\) (\d+) \(MinorGC\) (\d+)ms \(GC duration\)/.exec(
 					heap,
 				);
+
 			if (res) {
 				const [, used, garbage, majorGC, minorGC, gcDuration] = res;
+
 				if (
 					Number(used) + Number(garbage) <
 					bestHeapUsed + bestHeapGarbage
@@ -306,8 +321,10 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 
 	// try to load message threads
 	let messageThreadsByCommit = new Map<string, string>();
+
 	if (opts.slackMessageThreads) {
 		const filepath = path.resolve(opts.slackMessageThreads);
+
 		try {
 			const data = await fs.promises.readFile(filepath, "utf-8");
 			messageThreadsByCommit = new Map(JSON.parse(data));
@@ -332,6 +349,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 	const slack = new WebClient(opts.slackToken, { logLevel: LogLevel.ERROR });
 
 	let platformIcon: string;
+
 	if (opts.runtime === "web") {
 		platformIcon = ":chrome:";
 	} else if (process.platform === "darwin") {
@@ -343,6 +361,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 	}
 
 	let qualityIcon: string;
+
 	if (opts.quality === "stable") {
 		qualityIcon = ":vscode-stable:";
 	} else if (opts.quality === "exploration") {
@@ -357,6 +376,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 	};
 
 	let summary = `${platformIcon} ${qualityIcon} ${bestDuration! < Constants.FAST ? ":rocket:" : ":hankey:"} Summary: BEST \`${bestDuration}ms\`, VERSION \`${commit}\``;
+
 	if (opts.runtime === "web") {
 		summary += `, SCENARIO \`${opts.githubToken ? "standard remote" : "empty window"}\``;
 	}
@@ -373,8 +393,11 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 	// check for an existing thread and post a reply to it.
 	// update the thread main message to the fastest run.
 	let thread_ts: string | undefined = undefined;
+
 	let bestThreadRun: number | undefined = undefined;
+
 	const messageMetadata = messageThreadsByCommit.get(commit)?.split("|");
+
 	if (messageMetadata) {
 		thread_ts = messageMetadata[0];
 		bestThreadRun = Number(messageMetadata[1]);
@@ -476,6 +499,7 @@ module.exports = async function (argv: string[]): Promise<void> {
 		);
 
 	const opts: Opts = program.parse(argv).opts();
+
 	if (opts.fast) {
 		Constants.FAST = Number(opts.fast);
 	}
@@ -494,6 +518,7 @@ module.exports = async function (argv: string[]): Promise<void> {
 		);
 
 		fs.mkdirSync(path.dirname(Constants.PERF_FILE), { recursive: true });
+
 		if (fs.existsSync(Constants.PERF_FILE)) {
 			fs.truncateSync(Constants.PERF_FILE);
 		}
