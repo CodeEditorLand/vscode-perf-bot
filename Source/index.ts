@@ -14,21 +14,27 @@ import { Option, program } from "commander";
 
 interface Opts {
 	readonly runtime?: "desktop" | "web";
+
 	readonly quality?: "stable" | "insider" | "exploration";
+
 	readonly commit?: string;
 
 	readonly folder?: string;
+
 	readonly file?: string;
 
 	readonly githubToken?: string;
+
 	readonly gist?: string;
 
 	readonly slackToken?: string;
+
 	readonly slackMessageThreads?: string;
 
 	readonly fast?: number;
 
 	readonly verbose?: boolean;
+
 	readonly runtimeTrace?: boolean;
 
 	readonly disableCachedData?: boolean;
@@ -44,6 +50,7 @@ const Constants = {
 
 interface ILogEntry {
 	date: Date;
+
 	message: string;
 }
 
@@ -145,27 +152,34 @@ async function runPerformanceTest(
 
 		args.push("--unreleased");
 	}
+
 	if (opts.commit) {
 		args.push("--commit", opts.commit);
 	}
+
 	if (opts.folder) {
 		args.push("--folder", opts.folder);
 	}
+
 	if (opts.file) {
 		args.push("--file", opts.file);
 	}
+
 	if (opts.githubToken) {
 		args.push("--token", opts.githubToken);
 	}
+
 	if (opts.verbose) {
 		args.push("--verbose");
 	}
+
 	if (opts.runtimeTrace) {
 		// Collects metrics for loading, navigation and v8 script compilation phases.
 		args.push(
 			'--runtime-trace-categories="benchmark,browser,content,loading,navigation,mojom,renderer_host,startup,toplevel,v8,disabled-by-default-loading,disabled-by-default-network,disabled-by-default-v8.compile"',
 		);
 	}
+
 	if (opts.disableCachedData) {
 		args.push("--disable-cached-data");
 	}
@@ -207,14 +221,19 @@ async function runPerformanceTest(
 
 type PerfData = {
 	readonly commit: string;
+
 	readonly appName: string;
 
 	readonly bestDuration: number;
 
 	readonly bestHeapUsed: number | undefined;
+
 	readonly bestHeapGarbage: number | undefined;
+
 	readonly bestMajorGCs: number | undefined;
+
 	readonly bestMinorGCs: number | undefined;
+
 	readonly bestGCDuration: number | undefined;
 
 	readonly lines: string[];
@@ -261,6 +280,7 @@ function parsePerfFile(): PerfData | undefined {
 		const duration = Number(durationRaw);
 
 		appNameValue = appName;
+
 		commitValue = commit;
 
 		if (duration < bestDuration) {
@@ -281,9 +301,13 @@ function parsePerfFile(): PerfData | undefined {
 					bestHeapUsed + bestHeapGarbage
 				) {
 					bestHeapUsed = Number(used);
+
 					bestHeapGarbage = Number(garbage);
+
 					bestMajorGCs = Number(majorGC);
+
 					bestMinorGCs = Number(minorGC);
+
 					bestGCDuration = Number(gcDuration);
 				}
 			}
@@ -327,6 +351,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 
 		try {
 			const data = await fs.promises.readFile(filepath, "utf-8");
+
 			messageThreadsByCommit = new Map(JSON.parse(data));
 		} catch (err) {
 			log(
@@ -380,9 +405,11 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 	if (opts.runtime === "web") {
 		summary += `, SCENARIO \`${opts.githubToken ? "standard remote" : "empty window"}\``;
 	}
+
 	if (bestHeapUsed && bestHeapGarbage) {
 		summary += `, HEAP \`${bestHeapUsed}MB (used) ${bestHeapGarbage}MB (garbage) ${Math.round((bestHeapGarbage / (bestHeapUsed + bestHeapGarbage)) * 100)}% (ratio)\``;
 	}
+
 	if (bestMajorGCs && bestMinorGCs && bestGCDuration) {
 		summary += `, GCs \`${bestMajorGCs + bestMinorGCs} blocking ${bestGCDuration}ms\``;
 	}
@@ -400,6 +427,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 
 	if (messageMetadata) {
 		thread_ts = messageMetadata[0];
+
 		bestThreadRun = Number(messageMetadata[1]);
 	}
 
@@ -411,6 +439,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 
 		if (result.ts) {
 			thread_ts = result.ts;
+
 			messageThreadsByCommit.set(
 				commit,
 				[thread_ts, bestDuration].join("|"),
@@ -439,6 +468,7 @@ async function sendSlackMessage(data: PerfData, opts: Opts): Promise<void> {
 
 	if (opts.slackMessageThreads) {
 		const raw = JSON.stringify([...messageThreadsByCommit]);
+
 		await fs.promises.writeFile(opts.slackMessageThreads, raw, "utf-8");
 	}
 }
@@ -503,12 +533,14 @@ module.exports = async function (argv: string[]): Promise<void> {
 	if (opts.fast) {
 		Constants.FAST = Number(opts.fast);
 	}
+
 	if (opts.runtime) {
 		Constants.RUNTIME = opts.runtime;
 	}
 
 	const timeoutHandle = setTimeout(() => {
 		log(`${chalk.yellow("[perf]")} already half of the timeout reached!`);
+
 		logGist(opts);
 	}, Constants.TIMEOUT / 2);
 
@@ -530,6 +562,7 @@ module.exports = async function (argv: string[]): Promise<void> {
 			false /* without heap statistics */,
 			10 /* runs */,
 		);
+
 		await runPerformanceTest(
 			opts,
 			true /* with heap statistics */,
@@ -544,6 +577,7 @@ module.exports = async function (argv: string[]): Promise<void> {
 			log(
 				`${chalk.gray("[perf]")} overall result: BEST ${chalk.green(`${data.bestDuration}ms`)}, VERSION ${chalk.green(data.commit)}, APP ${chalk.green(`${data.appName}_${Constants.RUNTIME}`)}`,
 			);
+
 			await sendSlackMessage(data, opts);
 		}
 	} catch (e) {
