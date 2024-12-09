@@ -13,7 +13,7 @@
 		"@types/node": "22.10.1"
 	},
 	"main": "out/index",
-	"name": "@vscode/vscode-perf-bot",
+	"name": "@codeeditorland/vscode-perf-bot",
 	"scripts": {
 		"build": "tsc -p ./",
 		"compile": "tsc -p ./",
