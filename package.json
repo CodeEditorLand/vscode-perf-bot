@@ -1,5 +1,5 @@
 {
-	"name": "@codeeditorland/@codeeditorland/perf-bot",
+	"name": "@codeeditorland/perf-bot",
 	"description": "Allows to run performance tests with Slack bot messages for VS Code.",
 	"main": "out/index",
 	"bin": {
