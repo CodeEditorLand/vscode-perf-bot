@@ -14,9 +14,9 @@
 		"@octokit/rest": "21.1.0",
 		"@slack/web-api": "7.8.0",
 		"chalk": "5.x",
-		"commander": "13.0.0"
+		"commander": "13.1.0"
 	},
 	"devDependencies": {
-		"@types/node": "22.10.7"
+		"@types/node": "22.10.9"
 	}
 }
